@@ -12,7 +12,7 @@ from datetime import datetime
 if __name__ == "__main__":
     pass
 
-class Analyzer:
+class Explorer:
     def __init__(self):
         self.all_measurements = []
         self.directories = []
@@ -34,7 +34,7 @@ class Analyzer:
         self.save_directory = None
         self.qc = None
 
-    def setup_analyzer(self):
+    def setup_explorer(self):
         self.m = Measurements()
         self.all_measurements = self.m.get_measurement_list() 
         self.setup = Setup(self.all_measurements, self.m.get_measurement_category())

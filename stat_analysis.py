@@ -16,10 +16,13 @@ import scikit_posthocs as sp
 import sklearn
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 import itertools
 import pingouin as pg
 import umap
 import re
+import matplotlib.cm as cm
+import matplotlib.colors as colors
 
 class Statistics():
     def __init__(self, groups_param, data_param, selected_measurements_param):
@@ -60,8 +63,8 @@ class Statistics():
             if (len(data_norm_dist) >= 3):
                 stat, p_shapiro = stats.shapiro(data_norm_dist)
                 result_norm_dist[condition] = p_shapiro
-            else: 
-                print(f"The group {condition} contains not enough cilia to run hypothesis testing. {condition} was excluded from hypothesis testing")
+            #else: 
+                #print(f"The group {condition} contains not enough cilia to run hypothesis testing. {condition} was excluded from hypothesis testing")
                 #result_norm_dist[condition] = np.nan
         
         norm_dist_summary = all(value > alpha for key, value in result_norm_dist.items())
@@ -80,8 +83,8 @@ class Statistics():
             if (len(cond1) >= 3 and len(cond2) >= 3):
                 stat, p_levene = stats.levene(cond1, cond2)
                 result_homogen.update({f"condition": p_levene})
-            else:
-                print(f"The group {condition} contains not enough cilia to run hypothesis testing. {condition} was excluded from hypothesis testing ---")
+            #else:
+                #print(f"The group {condition} contains not enough cilia to run hypothesis testing. {condition} was excluded from hypothesis testing ---")
 
             homogen_dist_summary = all(value > alpha for key, value in result_homogen.items())
             summary.update({"Homogeneity of Variance": homogen_dist_summary})
@@ -97,8 +100,8 @@ class Statistics():
             elif((summary["Norm. distribution"] == True) and (summary["Homogeneity of Variance"] == False)):
                 stat, p = stats.ttest_ind(cond1, cond2, equal_var=False)
                 performed_test = "welch's ttest"
-            else:
-                print(f"The group {condition} did not neet the quality standards for analysis. {condition} was excluded from hypothesis testing ---")
+            #else:
+                #print(f"The group {condition} did not neet the quality standards for analysis. {condition} was excluded from hypothesis testing ---")
 
             pairwise = {
                 f"{cond1.name} vs {cond2.name}": [self.get_asterisk(p), p]}
@@ -121,7 +124,7 @@ class Statistics():
                 stat, p_levene = stats.levene(*data_col_list)
                 result_homogen.update({"All conditions": p_levene})
             else:
-                print(f"At least one group contains not enough cilia to run hypothesis testing. Skipping Levene's test.")
+                #print(f"At least one group contains not enough cilia to run hypothesis testing. Skipping Levene's test.")
                 result_homogen.update({"All conditions": np.nan})
 
 
@@ -300,4 +303,50 @@ class Statistics():
         sns.set_theme(style="whitegrid")
         sns.scatterplot(x=pca_df['PC1'], y=pca_df['PC2'], s=100, hue = pca_df['Group'], palette = "Set1", alpha = 0.7)
         plt.gca().set(title = 'Principle Component Analysis', xlabel = 'Principal Component 1', ylabel = 'Principal Component 2')
+        plt.show()
+
+        #feature extraction for PCA
+        loaded_data = pd.DataFrame(
+            pca.components_.T,
+            columns = [f"PC{i+1}" for i in range(pca.n_components)],
+            index = data_temp.columns
+        )
+        top_10_features_PC1 = loaded_data["PC1"].abs().sort_values(ascending = False).head(15)
+        top_10_df = top_10_features_PC1.reset_index()
+        top_10_df.columns = ["Measurements", "Absolute Loading"] 
+        #set color palette
+        features_norm = colors.Normalize(#vmin = top_10_df["Absolute Loading"].min(),
+                                         vmin = 0,
+                                         vmax = top_10_df["Absolute Loading"].max())
+        viridis = cm.get_cmap("viridis")
+        bar_colors = viridis(features_norm(top_10_df["Absolute Loading"].values))
+        #plot the figure
+        plt.figure(figsize=(8, 6))
+        sns.barplot(data = top_10_df, x = "Measurements", y = "Absolute Loading", palette = bar_colors)
+        plt.title('Top 15 Features Contributing to PC1')
+        plt.xlabel('Measurements')
+        plt.ylabel('Absolute loading values')
+        plt.xticks(rotation = 45, ha = "right")
+        plt.show()
+
+        # linear discriminant analysis
+        lda = LDA(n_components = 1)
+        X_lda = lda.fit_transform(data_scaled, group)
+        lda_coefficients = pd.Series(lda.coef_[0], index = data_temp.columns)
+        top_features_lda = lda_coefficients.abs().sort_values(ascending = False).head(15)
+        top_10_lda_df = top_features_lda.reset_index()
+        top_10_lda_df.columns = ["Measurements", "Absolute Coefficient"]
+        #set color palette
+        features_norm = colors.Normalize(#vmin = top_10_lda_df["Absolute Coefficient"].min(),
+                                         vmin = 0,
+                                         vmax = top_10_lda_df["Absolute Coefficient"].max())
+        viridis = cm.get_cmap("viridis")
+        bar_colors = viridis(features_norm(top_10_lda_df["Absolute Coefficient"].values))
+        #plot the figure
+        plt.figure(figsize=(8, 6))
+        sns.barplot(data = top_10_lda_df, x = "Measurements", y = "Absolute Coefficient", palette = bar_colors)
+        plt.title('Top 15 Features Contributing to Class Separation')
+        plt.xlabel('Measurements')
+        plt.ylabel('Absolute Coefficient')
+        plt.xticks(rotation = 45, ha = "right")
         plt.show()
