@@ -67,12 +67,11 @@ class QC:
     def raiseError(self, text):
         root = Tk()
         root.lift()
-        root.geometry
-        root.title = ("Raised Errors:")
+        root.title("Raised Errors:")
         frameForMessage = ttk.Frame(root, padding = 10)
         frameForMessage.pack(fill="x", expand=True)
         for error in text:
-            errorLabel = Label(frameForMessage, text = error, bg="white", anchor="w").pack()
+            Label(frameForMessage, text = error, bg="white", anchor="w").pack()
         ButtonSelectFolder = Button(root, text = "Ignore", command= root.destroy, font=("Helvetica", 14, "bold"), bd=2, relief="raised", wraplength = 1000).pack()
         root.attributes("-topmost", True)
         root.mainloop()
