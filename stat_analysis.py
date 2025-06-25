@@ -286,6 +286,7 @@ class Statistics():
                           "Intensity threshold Basal Stain",
                           ]
         data = data.drop([col for col in col_to_drp if col in data.columns], axis=1)
+        data.replace('?', np.nan, inplace=True)
         data.dropna(how='all', axis=1, inplace=True)
         data.dropna(axis=0, how="any", inplace=True)
         group = data['Group']
