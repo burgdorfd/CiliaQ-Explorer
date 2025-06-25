@@ -58,7 +58,7 @@ class Replicate(DataGroup):
 
     def import_metadata(self):
         meta_dic = {}
-        with open(self.file.path, "r", encoding = "utf-8", errors = "replace") as f:
+        with open(self.file.path, "r", encoding = "ISO-8859-1", errors = "replace") as f:
             lines = [line.strip().split("\t") for line in f]
             if (len(lines)) != 0:
                 self.image_name = str(lines[1][1])
@@ -78,6 +78,7 @@ class Replicate(DataGroup):
                     sep = "\t", 
                     skiprows = 28, 
                     usecols=range(60),
+                    encoding = "ISO-8859-1"
                     ).dropna(axis="columns", how = "all")
             self.ciliaQ_version = dataset.iloc[-1, 1]
             dataset = dataset.loc[:, ~dataset.columns.str.contains("^Unnamed", na=False)]
