@@ -235,9 +235,8 @@ class Statistics():
         return des_stat
     
     def perform_UMAP(self):
-        data = self.all_data
+        data = self.all_data.copy()
         col_to_drp = ['ID', 
-                          'Replicate', 
                           "x center [micron]",
                           "y center [micron]",
                           "z center [micron]",
@@ -251,11 +250,16 @@ class Statistics():
                           #"orientation vector z [micron] (vector from first to last skeleton point)",
                           ]
         data = data.drop([col for col in col_to_drp if col in data.columns], axis=1)
+
+        columns_to_numeric = data.columns[data.columns != "Group"]
+        data[columns_to_numeric] = data[columns_to_numeric].apply(pd.to_numeric,errors = "coerce")
+
         data.dropna(how='all', axis=1, inplace=True)
         data.dropna(axis=0, how="any", inplace=True)
         group = data['Group']
-        data = data.drop('Group', axis=1)  
-        data.replace("�", 0, inplace=True)
+        group_rep = data["Group"] + ", rep. " + data["Replicate"].astype(str)
+        data = data.drop('Group', axis=1)
+        data = data.drop('Replicate', axis=1)
         scaler = StandardScaler()
         data_scaled = scaler.fit_transform(data)
 
@@ -273,9 +277,16 @@ class Statistics():
         plt.ylabel('UMAP 2')
         plt.show()
 
+        plt.figure(figsize=(8, 6))
+        sns.scatterplot(x=embedding[:, 0], y=embedding[:, 1], hue=group_rep, palette="Set1", s=100, alpha=0.7)
+        plt.title('UMAP projection (unsupervised)')
+        plt.xlabel('UMAP 1')
+        plt.ylabel('UMAP 2')
+        plt.show()
+
     def perform_PCA(self):
         #remove unwanted columns
-        data = self.all_data
+        data = self.all_data.copy()
         col_to_drp = ['ID', 
                           'Replicate', 
                           "x center [micron]",
@@ -286,14 +297,18 @@ class Statistics():
                           "Intensity threshold Basal Stain",
                           ]
         data = data.drop([col for col in col_to_drp if col in data.columns], axis=1)
-        data.replace('?', np.nan, inplace=True)
+
+        columns_to_numeric = data.columns[data.columns != "Group"]
+        data[columns_to_numeric] = data[columns_to_numeric].apply(pd.to_numeric,errors = "coerce")
+
         data.dropna(how='all', axis=1, inplace=True)
         data.dropna(axis=0, how="any", inplace=True)
         group = data['Group']
-        data_temp = data.drop('Group', axis=1)
+        data = data.drop('Group', axis=1)
+
 
         scaler = StandardScaler()
-        data_scaled = scaler.fit_transform(data_temp)
+        data_scaled = scaler.fit_transform(data)
         pca = PCA(n_components=2)
         pca_result = pca.fit_transform(data_scaled)
         pca_df = pd.DataFrame(data=pca_result, columns=['PC1', 'PC2'])
@@ -303,37 +318,39 @@ class Statistics():
         plt.figure(figsize=(8, 6))
         sns.set_theme(style="whitegrid")
         sns.scatterplot(x=pca_df['PC1'], y=pca_df['PC2'], s=100, hue = pca_df['Group'], palette = "Set1", alpha = 0.7)
-        plt.gca().set(title = 'Principle Component Analysis', xlabel = 'Principal Component 1', ylabel = 'Principal Component 2')
+        plt.gca().set(title = 'Principle Component Analysis', 
+                      xlabel = f'Principal Component 1 (explains {str(round(pca.explained_variance_ratio_[0]*100, 2))})', 
+                      ylabel = f'Principal Component 2 (explains {str(round(pca.explained_variance_ratio_[1]*100, 2))})')
         plt.show()
 
         #feature extraction for PCA
-        loaded_data = pd.DataFrame(
-            pca.components_.T,
-            columns = [f"PC{i+1}" for i in range(pca.n_components)],
-            index = data_temp.columns
-        )
-        top_10_features_PC1 = loaded_data["PC1"].abs().sort_values(ascending = False).head(15)
-        top_10_df = top_10_features_PC1.reset_index()
-        top_10_df.columns = ["Measurements", "Absolute Loading"] 
+        #loaded_data = pd.DataFrame(
+        #    pca.components_.T,
+        #    columns = [f"PC{i+1}" for i in range(pca.n_components)],
+        #    index = data.columns
+        #)
+        #top_10_features_PC1 = loaded_data["PC1"].abs().sort_values(ascending = False).head(15)
+        #top_10_df = top_10_features_PC1.reset_index()
+        #top_10_df.columns = ["Measurements", "Absolute Loading"] 
         #set color palette
-        features_norm = colors.Normalize(#vmin = top_10_df["Absolute Loading"].min(),
-                                         vmin = 0,
-                                         vmax = top_10_df["Absolute Loading"].max())
-        viridis = cm.get_cmap("viridis")
-        bar_colors = viridis(features_norm(top_10_df["Absolute Loading"].values))
+        #features_norm = colors.Normalize(#vmin = top_10_df["Absolute Loading"].min(),
+        #                                 vmin = 0,
+        #                                 vmax = top_10_df["Absolute Loading"].max())
+        #viridis = cm.get_cmap("viridis")
+        #bar_colors = viridis(features_norm(top_10_df["Absolute Loading"].values))
         #plot the figure
-        plt.figure(figsize=(8, 6))
-        sns.barplot(data = top_10_df, x = "Measurements", y = "Absolute Loading", palette = bar_colors)
-        plt.title('Top 15 Features Contributing to PC1')
-        plt.xlabel('Measurements')
-        plt.ylabel('Absolute loading values')
-        plt.xticks(rotation = 45, ha = "right")
-        plt.show()
+        #plt.figure(figsize=(8, 6))
+        #sns.barplot(data = top_10_df, x = "Measurements", y = "Absolute Loading", palette = bar_colors)
+        #plt.title('Top 15 Features Contributing to PC1')
+        #plt.xlabel('Measurements')
+        #plt.ylabel('Absolute loading values')
+        #plt.xticks(rotation = 45, ha = "right")
+        #plt.show()
 
         # linear discriminant analysis
         lda = LDA(n_components = 1)
         X_lda = lda.fit_transform(data_scaled, group)
-        lda_coefficients = pd.Series(lda.coef_[0], index = data_temp.columns)
+        lda_coefficients = pd.Series(lda.coef_[0], index = data.columns)
         top_features_lda = lda_coefficients.abs().sort_values(ascending = False).head(15)
         top_10_lda_df = top_features_lda.reset_index()
         top_10_lda_df.columns = ["Measurements", "Absolute Coefficient"]

@@ -78,7 +78,8 @@ class Replicate(DataGroup):
                     sep = "\t", 
                     skiprows = 28, 
                     usecols=range(60),
-                    encoding = "ISO-8859-1"
+                    encoding = "ISO-8859-1",
+                    encoding_errors = "replace"
                     ).dropna(axis="columns", how = "all")
             self.ciliaQ_version = dataset.iloc[-1, 1]
             dataset = dataset.loc[:, ~dataset.columns.str.contains("^Unnamed", na=False)]

@@ -175,14 +175,14 @@ class Explorer:
                 csv.write("Treatment duration:\t" + "\t".join(self.group_duration) + "\n\n")
 
     def perform_qc(self):
-        self.qc = QC(self.all_groups, self.save_directory_plot_summary, self.time)
+        self.qc = QC(self.all_groups, self.save_directory_plot_summary, self.time, self.setup.get_root())
         self.qc.perform_qc()
 
     def write_summary(self):
         self.get_metadata()
         write_path = self.save_directory_plot_summary + "/summary.txt"
 
-        with open(write_path, "w") as csv: 
+        with open(write_path, "w") as csv:   
             csv.write(f"This is a summary of all replicates that were pooled on {self.time}:\n")
             csv.write("\n")
 
@@ -266,36 +266,4 @@ class Explorer:
         #        #plotter.plotViolinplot(isolate_measurement, measurement, m.get_measurement_dic())
         #    except UnboundLocalError:
         #        print(f"error, measurement {measurement} not found")
-
-
-
-
-
-
-
-
-
-
-
-    
-
-    
-
-
-
-    
-    
-    
-    
-
-
-
-
-
-
-
-
-
-
-
 

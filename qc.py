@@ -1,3 +1,4 @@
+import tkinter as tk
 from tkinter import *
 from tkinter import filedialog, ttk
 import numpy as np
@@ -11,11 +12,12 @@ class QC:
         "max span": 1
     }
     
-    def __init__(self, all_groups, write_path_param, time_param):
+    def __init__(self, all_groups, write_path_param, time_param, root_param):
         self.groups = all_groups
         self.write_path = write_path_param
         self.time = time_param
         self.errors = []
+        self.root = root_param
 
     def perform_qc(self):
         
@@ -65,16 +67,27 @@ class QC:
         self.write_qc_summary()
 
     def raiseError(self, text):
-        root = Tk()
-        root.lift()
-        root.title("Raised Errors:")
-        frameForMessage = ttk.Frame(root, padding = 10)
+        window = tk.Toplevel(self.root)
+        window.title("Raised Errors:")
+        def close():
+            window.grab_release()
+            window.destroy()
+            self.root.deiconify()
+            self.root.withdraw()
+        
+        frameForMessage = ttk.Frame(window, padding = 10)
         frameForMessage.pack(fill="x", expand=True)
+
         for error in text:
-            Label(frameForMessage, text = error, bg="white", anchor="w").pack()
-        ButtonSelectFolder = Button(root, text = "Ignore", command= root.destroy, font=("Helvetica", 14, "bold"), bd=2, relief="raised", wraplength = 1000).pack()
-        root.attributes("-topmost", True)
-        root.mainloop()
+            Label(frameForMessage, text = error, fg="black", bg="white", anchor="w").pack()
+        ButtonSelectFolder = Button(window, text = "Ignore", command= close, font=("Helvetica", 14, "bold"), bd=2, relief="raised", wraplength = 1000).pack()
+        window.lift()
+        window.protocol("WM_DELETE_WINDOW", close) # intercept close button
+        window.transient(self.root) 
+        window.wait_visibility()
+        window.grab_set()
+        window.wait_window()
+
 
     #returns a list of cilia-IDs of all outliers, the first quantile q1 and third q3  
     def detect_outlier(self, data, column):
