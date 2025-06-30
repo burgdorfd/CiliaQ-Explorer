@@ -44,14 +44,12 @@ class Setup():
         window.grab_release()
         window.destroy()
         self.root.deiconify()
-        self.root.withdraw()
 
     def get_root(self):
         return self.root
     
     def getDirectories(self):
         directories = []
-        self.root.withdraw()
         def selectFolder(directoryList, var):
             filepath = filedialog.askdirectory(parent = window)
             if filepath:
@@ -174,7 +172,6 @@ class Setup():
         window = tk.Toplevel(parent)
         window.resizable(True, True)
         window.title("Please select Measurements")
-        self.root.withdraw()
         checkbox_state = {}
 
         def updateSelection(measurement, state):

@@ -345,8 +345,8 @@ class Statistics():
         sns.set_theme(style="whitegrid")
         sns.scatterplot(x=pca_df['PC1'], y=pca_df['PC2'], s=100, hue = pca_df['Group'], palette = "Set1", alpha = 0.7)
         plt.gca().set(title = 'Principle Component Analysis', 
-                      xlabel = f'Principal Component 1 (explains {str(round(pca.explained_variance_ratio_[0]*100, 2))})', 
-                      ylabel = f'Principal Component 2 (explains {str(round(pca.explained_variance_ratio_[1]*100, 2))})')
+                      xlabel = f'Principal Component 1 (explains {str(round(pca.explained_variance_ratio_[0]*100, 2))} %)', 
+                      ylabel = f'Principal Component 2 (explains {str(round(pca.explained_variance_ratio_[1]*100, 2))} %)')
         plt.tight_layout()
         if self.save_SVG:
             plt.savefig(f"{self.save_directory_plots}/PCA_by_group.svg", dpi = 300, bbox_inches='tight')
