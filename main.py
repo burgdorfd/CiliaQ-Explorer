@@ -59,7 +59,7 @@ class Explorer:
         self.measurement_selection = [measurement for measurement in self.measurement_selection if measurement in self.common_columns]
     
     def perform_statistics(self):
-        self.statistics = Statistics(self.all_groups, self.all_data, self.measurement_selection) 
+        self.statistics = Statistics(self.all_groups, self.all_data, self.measurement_selection, self.save_directory_plots, self.save_directory_plot_summary, self.save_SVG, self.save_PNG) 
         self.des_stat = self.statistics.calculate_des_Statistics()
         measurement_selection_temp = functions.trim_Group_Replicate(self.measurement_selection)
         for measurement in measurement_selection_temp:
@@ -103,6 +103,7 @@ class Explorer:
                     isolate_measurement.rename(columns={measurement: group.getName()}, inplace = True)
                 isolate_measurement = pd.melt(isolate_measurement)
                 plotter.superplot5(self.all_data, measurement, self.m.get_measurement_dic(), self.stat_list, self.save_directory_plots, self.des_stat, self.save_SVG, self.save_PNG)
+                
             except UnboundLocalError:
                 print(f"error, measurement {measurement} not found")
             except KeyError:
@@ -140,9 +141,9 @@ class Explorer:
                     self.fixation = str(lines[40][2]) if (str(lines[40][2]) != "No" or str(lines[40][2]) is not None) else "no fixation used"
                     self.exp_replicate_names = [str(lines[i][2]) for i in range(64, len(lines)) if lines[i][2] is not None]
 
-    def write_for5547_summary(self):
+    def write_metadata_summary(self):
         self.get_metadata()
-        write_path = self.save_directory_plot_summary + "/FOR5547_summary.txt"
+        write_path = self.save_directory_plot_summary + "/metadata.txt"
 
         with open(write_path, "w") as csv: 
             csv.write("This is a summary of the metadata provided by a MFOR5547-metafile. This file serves serves to ensure reproducability across experiments and analysis runs.\n")
@@ -225,7 +226,7 @@ class Explorer:
                     csv.write("\n")
 
                     rep.get_data().to_csv(write_path, mode = "a", sep="\t", index = False)
-                    print(rep.get_data())
+                    #print(rep.get_data())
                     
                     with open(write_path, "a") as csv:
                         csv.write("\n")
@@ -233,13 +234,23 @@ class Explorer:
     def write_config(self):
         write_path = self.save_directory_plot_summary + "/config.txt"
         with open(write_path, "w") as csv: 
-            csv.write("This is a config-file for the CiliaQ Analyzer:\n")
+            csv.write("This is a config-file for the CiliaQ Explorer:\n")
             csv.write("\n")
             for directory in self.directories:
                 csv.write(f"{os.path.abspath(directory)} \t")
             for measurement in self.measurement_selection:
                 csv.write(f"{measurement} \t")
-
+    
+    def write_stat_summary(self):
+        write_path = self.save_directory_plot_summary + "/statistics.txt"
+        with open(write_path, "w", newline="") as csv:
+            csv.write(f"This is a file summarizing the statistics performed by the CiliaQ Explorer on {self.time}:\n")
+            csv.write("\n")
+            for stat in self.stat_list:
+                csv.write(",".join(map(str, stat.keys())) + "\n")
+                csv.write(",".join(map(str, stat.values())) + "\n")
+                csv.write("\n")
+                
     #def plot_single_Reps(self):
         #Plot single reps
         #colors = ["blue","orange","cyan","red","green","yellow",]

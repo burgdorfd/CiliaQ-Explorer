@@ -41,7 +41,7 @@ class Plotter:
             #plt.savefig(f"{measurement_name}", format="svg")
 
     def superplot5(self, combined, measurement, y_axis_names_dic, stat_list, directory_for_saving, des_stat_param, save_SVG_param, save_PNG_param):
-        print(stat_list)
+        #print(stat_list)
         if stat_list is not None:
             stat_measurements = [dic for dic in stat_list if dic is not None and dic.get("measurement") == measurement]
         else: 
@@ -132,10 +132,8 @@ class Plotter:
             
             if save_PNG_param == True: 
                 plt.savefig(f"{directory_for_saving}/{filename}.png", dpi = 300, bbox_inches='tight', bbox_extra_artists = [subtitle])
-                print(f"now, I would save the figure under  {directory_for_saving}/{filename}.png")
             if save_SVG_param == True: 
                 plt.savefig(f"{directory_for_saving}/{filename}.svg")
-                print(f"now, I would save the figure under  {directory_for_saving}/{filename}.svg")
             plt.show()
             plt.close(fig)
         else:

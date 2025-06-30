@@ -25,12 +25,17 @@ import matplotlib.cm as cm
 import matplotlib.colors as colors
 
 class Statistics():
-    def __init__(self, groups_param, data_param, selected_measurements_param):
+    def __init__(self, groups_param, data_param, selected_measurements_param, save_directory_plots_param, save_directory_plot_summary_param, save_SVG_param, save_PNG_param):
         self.all_groups = groups_param
         self.all_data = data_param
+        self.column_names = selected_measurements_param      
+        self.save_directory_plots = save_directory_plots_param
+        self.save_directory_data = save_directory_plot_summary_param
+        self.save_SVG = save_SVG_param
+        self.save_PNG = save_PNG_param
         self.tukey_df = pd.DataFrame()
         self.dunn_df = pd.DataFrame()
-        self.column_names = selected_measurements_param
+
         self.measurement_selection = self.column_names
         #self.measurement_selection = self.column_names.remove(["Replicate", "Group"])
         # prepare the dataframe
@@ -275,13 +280,35 @@ class Statistics():
         plt.title('UMAP projection (unsupervised)')
         plt.xlabel('UMAP 1')
         plt.ylabel('UMAP 2')
-        plt.show()
-
+        plt.tight_layout()           
+        if self.save_SVG:
+            plt.savefig(f"{self.save_directory_plots}/UMAP_by_group.svg", dpi = 300, bbox_inches='tight')
+        if self.save_PNG:
+            plt.savefig(f"{self.save_directory_plots}/UMAP_by_group.png", dpi = 300, bbox_inches='tight')        
+        plt.show()        
+        
         plt.figure(figsize=(8, 6))
-        sns.scatterplot(x=embedding[:, 0], y=embedding[:, 1], hue=group_rep, palette="Set1", s=100, alpha=0.7)
+        sns.scatterplot(
+                        x=embedding[:, 0], 
+                        y=embedding[:, 1], 
+                        hue=group_rep,
+                        style = group, 
+                        palette="husl", 
+                        s=100, 
+                        alpha=0.7)
         plt.title('UMAP projection (unsupervised)')
+        plt.legend(title = "Group, Replicate",
+                   loc="upper left",
+                   bbox_to_anchor = (1.05, 1),
+                   borderaxespad = 0,
+                   frameon = True)
         plt.xlabel('UMAP 1')
         plt.ylabel('UMAP 2')
+        plt.tight_layout()     
+        if self.save_SVG:
+            plt.savefig(f"{self.save_directory_plots}/UMAP_by_group_and_rep.svg", dpi = 300, bbox_inches='tight')
+        if self.save_PNG:
+            plt.savefig(f"{self.save_directory_plots}/UMAP_by_group_and_rep.png", dpi = 300, bbox_inches='tight')           
         plt.show()
 
     def perform_PCA(self):
@@ -306,7 +333,6 @@ class Statistics():
         group = data['Group']
         data = data.drop('Group', axis=1)
 
-
         scaler = StandardScaler()
         data_scaled = scaler.fit_transform(data)
         pca = PCA(n_components=2)
@@ -321,6 +347,11 @@ class Statistics():
         plt.gca().set(title = 'Principle Component Analysis', 
                       xlabel = f'Principal Component 1 (explains {str(round(pca.explained_variance_ratio_[0]*100, 2))})', 
                       ylabel = f'Principal Component 2 (explains {str(round(pca.explained_variance_ratio_[1]*100, 2))})')
+        plt.tight_layout()
+        if self.save_SVG:
+            plt.savefig(f"{self.save_directory_plots}/PCA_by_group.svg", dpi = 300, bbox_inches='tight')
+        if self.save_PNG:
+            plt.savefig(f"{self.save_directory_plots}/PCA_by_group.png", dpi = 300, bbox_inches='tight')       
         plt.show()
 
         #feature extraction for PCA
@@ -354,17 +385,24 @@ class Statistics():
         top_features_lda = lda_coefficients.abs().sort_values(ascending = False).head(15)
         top_10_lda_df = top_features_lda.reset_index()
         top_10_lda_df.columns = ["Measurements", "Absolute Coefficient"]
-        #set color palette
+
+        #set viridis color palette
         features_norm = colors.Normalize(#vmin = top_10_lda_df["Absolute Coefficient"].min(),
                                          vmin = 0,
                                          vmax = top_10_lda_df["Absolute Coefficient"].max())
         viridis = cm.get_cmap("viridis")
         bar_colors = viridis(features_norm(top_10_lda_df["Absolute Coefficient"].values))
+
         #plot the figure
-        plt.figure(figsize=(8, 6))
+        #plt.figure(figsize=(8, 6))
         sns.barplot(data = top_10_lda_df, x = "Measurements", y = "Absolute Coefficient", palette = bar_colors)
         plt.title('Top 15 Features Contributing to Class Separation')
         plt.xlabel('Measurements')
         plt.ylabel('Absolute Coefficient')
         plt.xticks(rotation = 45, ha = "right")
+        plt.tight_layout()
+        if self.save_SVG:
+            plt.savefig(f"{self.save_directory_plots}/Linear_Discriminant_Analysis.svg", dpi = 300, bbox_inches='tight')
+        if self.save_PNG:
+            plt.savefig(f"{self.save_directory_plots}/Linear_Discriminant_Analysis.png", dpi = 300, bbox_inches='tight')          
         plt.show()

@@ -51,6 +51,7 @@ class Setup():
     
     def getDirectories(self):
         directories = []
+        self.root.withdraw()
         def selectFolder(directoryList, var):
             filepath = filedialog.askdirectory(parent = window)
             if filepath:
@@ -111,16 +112,18 @@ class Setup():
         self.root.deiconify()
 
     def setup_window(self):
+        
         window = tk.Toplevel(self.root)
         window.resizable(True, True)
         window.title("Analyzer setup:")
         window.lift()
+        
         def select_stat(event): 
             self.stat_selection = drop_down.get()
 
         def selectMetafile():
             file_path = filedialog.askopenfilename(
-            title="Select a FOR5547-metasheet (optional, but recommended)",
+            title="Select a metasheet (optional, but recommended)",
             filetypes=[("CSV Files", "*.csv"), ("All Files", "*.*")]
             )
             self.metafileDir = file_path
@@ -141,7 +144,7 @@ class Setup():
         tk.Label(window, text =  "Include measurements into analysis:", font=("Helvetica", 12)).pack()
         Button(window, text =  "Select measurements", font=("Helvetica", 12, "bold"), bd=2, relief="raised", command = lambda: self.set_measurement_window(window)).pack()
 
-        tk.Label(window, text =  "Upload FOR5547-Metafile", font=("Helvetica", 12)).pack(pady= 20)
+        tk.Label(window, text =  "Upload Metafile", font=("Helvetica", 12)).pack(pady= 20)
         Button(window, text = "Select Metafile", command= lambda : selectMetafile(), font=("Helvetica", 14, "bold"), bd=2, relief="raised").pack()
 
         tk.Label(window, text =  "Method for hypothesis testing", font=("Helvetica", 12)).pack(pady = 10)
@@ -171,7 +174,7 @@ class Setup():
         window = tk.Toplevel(parent)
         window.resizable(True, True)
         window.title("Please select Measurements")
-
+        self.root.withdraw()
         checkbox_state = {}
 
         def updateSelection(measurement, state):
@@ -209,8 +212,10 @@ class Setup():
                     checkbox_state[measurement] = result
                     Checkbutton(window, text= measurement,  variable = result, onvalue= 1, offvalue=0, command = lambda m=measurement, r = result: updateSelection(m, r)).grid(row=row_count[column], column = column, sticky = "w", padx = 5, pady = 0)
                     row_count[column] = row_count[column]+1
-        Button(window, text = "Apply", command = lambda: self.close_window(window), font=("Helvetica", 14, "bold"), bd=2, relief="raised").grid(column = 1, row=row_count[0]+2, columnspan = 1, padx = 10, sticky = "s")
-        Button(window, text =  "Select all", font=("Helvetica", 14, "bold"), bd=2, relief="raised", command = lambda: choose_all()).grid(row=row_count[1], column = 0, columnspan = 1, padx = 10, sticky = "s")
+        bottom_row = max(row_count[0], row_count[1]) + 2
+        
+        Button(window, text = "Apply", command = lambda: self.close_window(window), font=("Helvetica", 14, "bold"), bd=2, relief="raised").grid(row=bottom_row, column = 1, columnspan = 1, padx = 10, sticky = "s")
+        Button(window, text =  "Select all", font=("Helvetica", 14, "bold"), bd=2, relief="raised", command = choose_all).grid(row=bottom_row, column = 0, columnspan = 1, padx = 10, sticky = "s")
         parent.update_idletasks()
         window.grab_set()
         #window.lift()
