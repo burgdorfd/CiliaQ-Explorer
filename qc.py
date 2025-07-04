@@ -64,7 +64,6 @@ class QC:
 
     def raiseError(self, text):
         window = tk.Toplevel(self.root)
-        self.root.withdraw()
         window.title("Raised Errors:")
         def close():
             window.grab_release()
