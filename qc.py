@@ -50,10 +50,6 @@ class QC:
             if(len(averageInt_outliers_cilia[0]) != 0):
                 self.errors.append("The group " + group.getName() + " contains " + str(len(averageInt_outliers_cilia[0])) + " exceptionally branched cilia. The affected cilia are " + str(averageInt_outliers_cilia[0]))
 
-            underexposed_cilia_px = self.compare_to_threshold(df, "minimum intensity (in reconstruction channel)", 0, "=")
-            if(len(underexposed_cilia_px) != 0):
-                self.errors.append("The group " + group.getName() + " contains " + str(len(underexposed_cilia_px)) + " cilia that have underexposed pixels as part of their mask. The affected cilia are cilia " + str(underexposed_cilia_px))
-
             avInt_variance_outliers_cilia = self.detect_outlier(df, "average intensity (in reconstruction channel)")
             if(len(avInt_variance_outliers_cilia[0]) != 0):
                 self.errors.append("The group " + group.getName() + " contains " + str(len(avInt_variance_outliers_cilia[0])) + " exceptionally branched cilia. The affected cilia are " + str(avInt_variance_outliers_cilia[0]) + ". Please verify the segmentation to prevent accidentally fused cilia.\n")
@@ -81,7 +77,7 @@ class QC:
 
         for error in text:
             Label(frameForMessage, text = error, fg="black", bg="white", anchor="w").pack()
-        ButtonSelectFolder = Button(window, text = "Ignore", command= close, font=("Helvetica", 14, "bold"), bd=2, relief="raised", wraplength = 1000).pack()
+        ButtonSelectFolder = Button(window, text = "Confirm", command= close, font=("Helvetica", 14, "bold"), bd=2, relief="raised", wraplength = 1000).pack()
         window.lift()
         window.protocol("WM_DELETE_WINDOW", close) # intercept close button
         window.transient(self.root) 

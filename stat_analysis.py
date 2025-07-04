@@ -277,7 +277,7 @@ class Statistics():
         embedding = reducer.fit_transform(data_scaled)
         plt.figure(figsize=(8, 6))
         sns.scatterplot(x=embedding[:, 0], y=embedding[:, 1], hue=group, palette="Set1", s=100, alpha=0.7)
-        plt.title('UMAP projection (unsupervised)')
+        plt.title('UMAP Projection (unsupervised)')
         plt.xlabel('UMAP 1')
         plt.ylabel('UMAP 2')
         plt.tight_layout()           
@@ -296,7 +296,7 @@ class Statistics():
                         palette="husl", 
                         s=100, 
                         alpha=0.7)
-        plt.title('UMAP projection (unsupervised)')
+        plt.title('UMAP Projection (unsupervised) for Batch Effect Analysis')
         plt.legend(title = "Group, Replicate",
                    loc="upper left",
                    bbox_to_anchor = (1.05, 1),
@@ -315,12 +315,13 @@ class Statistics():
         #remove unwanted columns
         data = self.all_data.copy()
         col_to_drp = ['ID', 
-                          'Replicate', 
                           "x center [micron]",
                           "y center [micron]",
                           "z center [micron]",
                           "Intensity threshold A",
                           "Intensity threshold B",
+                          "Volume [micron^3]",
+                          "Surface [micron^2]",
                           "Intensity threshold Basal Stain",
                           ]
         data = data.drop([col for col in col_to_drp if col in data.columns], axis=1)
@@ -331,7 +332,9 @@ class Statistics():
         data.dropna(how='all', axis=1, inplace=True)
         data.dropna(axis=0, how="any", inplace=True)
         group = data['Group']
-        data = data.drop('Group', axis=1)
+        group_rep = group + ", rep. " + data["Replicate"].astype(str) 
+        group_rep.reset_index(drop = True, inplace = True)
+        data = data.drop(['Group', 'Replicate'], axis=1)
 
         scaler = StandardScaler()
         data_scaled = scaler.fit_transform(data)
@@ -340,18 +343,44 @@ class Statistics():
         pca_df = pd.DataFrame(data=pca_result, columns=['PC1', 'PC2'])
         pca_df.reset_index(drop=True, inplace=True)
         group.reset_index(drop=True, inplace=True)
+
         pca_df.insert(0, "Group", group)
+        pca_df.insert(0, "group_rep", group_rep)
         plt.figure(figsize=(8, 6))
         sns.set_theme(style="whitegrid")
         sns.scatterplot(x=pca_df['PC1'], y=pca_df['PC2'], s=100, hue = pca_df['Group'], palette = "Set1", alpha = 0.7)
         plt.gca().set(title = 'Principle Component Analysis', 
-                      xlabel = f'Principal Component 1 (explains {str(round(pca.explained_variance_ratio_[0]*100, 2))})', 
-                      ylabel = f'Principal Component 2 (explains {str(round(pca.explained_variance_ratio_[1]*100, 2))})')
+                      xlabel = f'Principal Component 1 (explains {str(round(pca.explained_variance_ratio_[0]*100, 2))} %)', 
+                      ylabel = f'Principal Component 2 (explains {str(round(pca.explained_variance_ratio_[1]*100, 2))} %)')
         plt.tight_layout()
         if self.save_SVG:
             plt.savefig(f"{self.save_directory_plots}/PCA_by_group.svg", dpi = 300, bbox_inches='tight')
         if self.save_PNG:
             plt.savefig(f"{self.save_directory_plots}/PCA_by_group.png", dpi = 300, bbox_inches='tight')       
+        plt.show()
+
+        plt.figure(figsize=(8, 6))
+        sns.scatterplot(
+                        x=pca_df['PC1'], 
+                        y=pca_df['PC2'], 
+                        hue=pca_df['group_rep'],
+                        style = group, 
+                        palette="husl", 
+                        s=100, 
+                        alpha=0.7)
+        plt.gca().set(title = 'Principle Component Analysis for Batch Effect Analysis', 
+                      xlabel = f'Principal Component 1 (explains {str(round(pca.explained_variance_ratio_[0]*100, 2))} %)', 
+                      ylabel = f'Principal Component 2 (explains {str(round(pca.explained_variance_ratio_[1]*100, 2))} %)')
+        plt.legend(title = "Group, Replicate",
+                   loc="upper left",
+                   bbox_to_anchor = (1.05, 1),
+                   borderaxespad = 0,
+                   frameon = True)
+        plt.tight_layout()     
+        if self.save_SVG:
+            plt.savefig(f"{self.save_directory_plots}/UPCA_by_group_and_rep.svg", dpi = 300, bbox_inches='tight')
+        if self.save_PNG:
+            plt.savefig(f"{self.save_directory_plots}/PCA_by_group_and_rep.png", dpi = 300, bbox_inches='tight')           
         plt.show()
 
         #feature extraction for PCA

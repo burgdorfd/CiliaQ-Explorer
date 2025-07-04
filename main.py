@@ -146,7 +146,7 @@ class Explorer:
         write_path = self.save_directory_plot_summary + "/metadata.txt"
 
         with open(write_path, "w") as csv: 
-            csv.write("This is a summary of the metadata provided by a MFOR5547-metafile. This file serves serves to ensure reproducability across experiments and analysis runs.\n")
+            csv.write("This is a summary of the metadata provided metadata file. This file serves to ensure reproducability across experiments and analysis runs.\n")
             csv.write("\n")
             if self.metafileDir is not None:
                 csv.write("\n")

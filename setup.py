@@ -92,14 +92,14 @@ class Setup():
         window = tk.Toplevel(self.root)
         window.lift()
         window.resizable(False, False)
-        window.title("Welcome to the CiliaQ Analyzer")
+        window.title("Welcome to the CiliaQ Explorer")
         window.attributes('-topmost', True)
 
         def open_link(event):
             webbrowser.open_new("10.1140/epje/s10189-021-00031-y")
 
-        tk.Label(window, text =  "CiliaQ Analyser, Version 1.1.0, 2025", font=("Helvetica", 16, "bold"), anchor='w').pack()
-        tk.Label(window, text =  "Welcome to the CiliaQ Analyser. This notebook is an addition to the CiliaQ Plugin for Fiji ImageJ (Hansen JN et al, 2021) \n \n", font=("Helvetica", 12), wraplength = 600, justify = "left", anchor='w').pack()
+        tk.Label(window, text =  "CiliaQ Explorer, Version 1.1.0, 2025", font=("Helvetica", 16, "bold"), anchor='w').pack()
+        tk.Label(window, text =  "Welcome to the CiliaQ Explorer. This notebook is an addition to the CiliaQ Plugin for Fiji ImageJ (Hansen JN et al, 2021) \n \n", font=("Helvetica", 12), wraplength = 600, justify = "left", anchor='w').pack()
         tk.Label(window, text = "This notebook provides a step-by-step pipeline that can process CiliaQ-derived analysis results from different replicates and experimental conditions. This notebook allows pooling CiliaQ-derived CQ files from different experimental replicates and conditions, performing quality control and statistical analysis of the data and plotting all ciliary parameters in a superplot-format. \n \n", wraplength = 600, justify = "left", font=("Helvetica", 12), anchor='w').pack()
         tk.Label(window, text =  "In the following, you will be guided through the workflow. For more detailed instructions, read the jupyter notebook or refer to our protocol paper (Burgdorf et al., 2025)",  wraplength = 600, justify = "left", font=("Helvetica", 12), anchor='w').pack()
         Button(window, text = "Let's start!", command = lambda: self.close_window(window), font=("Helvetica", 14, "bold"), bd=2, relief="raised").pack()
@@ -115,7 +115,7 @@ class Setup():
         
         window = tk.Toplevel(self.root)
         window.resizable(True, True)
-        window.title("Analyzer setup:")
+        window.title("Explorer setup:")
         window.lift()
         
         def select_stat(event): 
